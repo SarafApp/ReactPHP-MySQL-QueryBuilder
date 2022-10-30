@@ -1,0 +1,36 @@
+{
+  "name": "saraf/qb",
+  "description": "an easy to use query builder for mysql",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Parsa Dehfuli",
+      "email": "parsa@saraf.app"
+    },
+    {
+      "name": "Hassan Parasteh",
+      "email": "hassan@saraf.app"
+    }
+  ],
+  "require": {
+    "php": ">=8.0",
+    "react/mysql": "^0.5.7",
+    "vlucas/phpdotenv": "^5.5.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Saraf\\QB\\": "src"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9",
+    "friendsofphp/php-cs-fixer": "^3.12",
+    "phpstan/phpstan": "^1.8"
+  },
+  "scripts": {
+    "test": "./vendor/bin/phpunit tests",
+    "phpcs": "phpcs --parallel=4 --standard=PSR1 src/",
+    "phpcs-fixer": "php-cs-fixer fix src/",
+    "phpstan": "vendor/bin/phpstan analyse src tests"
+  }
+}

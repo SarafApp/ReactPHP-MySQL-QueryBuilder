@@ -1,0 +1,19 @@
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+
+# Composer
+composer.lock
+vendor/
+
+# Cache
+*.cache
+
+nodemon.json
+package-lock.json
+package.json
+node_modules
+
+.env
