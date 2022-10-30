@@ -221,6 +221,66 @@ final class SelectTest extends TestCase
         $s->compile();
     }
 
+    public function testAddColumnMin()
+    {
+        $s = new Select();
+
+        $s->addColumnMin("price");
+
+        $s->addColumnMin("amount", "least", false);
+
+        $reflection = new \ReflectionClass($s);
+
+        $statements = $reflection->getProperty("statements");
+        $statements->setAccessible(true);
+
+        self::assertCount(2, $statements->getValue($s));
+        self::assertEquals("MIN(`price`)", $statements->getValue($s)[0]);
+        self::assertEquals("MIN(amount) AS `least`", $statements->getValue($s)[1]);
+    }
+
+    /**
+     * @throws \Saraf\QB\QueryBuilder\Exceptions\QueryBuilderException
+     */
+    public function testAddColumnMax()
+    {
+        $s = new Select();
+
+        $s->addColumnMax("price");
+
+        $s->addColumnMax("amount", "best", false);
+
+        $reflection = new \ReflectionClass($s);
+
+        $statements = $reflection->getProperty("statements");
+        $statements->setAccessible(true);
+
+        self::assertCount(2, $statements->getValue($s));
+        self::assertEquals("MAX(`price`)", $statements->getValue($s)[0]);
+        self::assertEquals("MAX(amount) AS `best`", $statements->getValue($s)[1]);
+    }
+
+    /**
+     * @throws \Saraf\QB\QueryBuilder\Exceptions\QueryBuilderException
+     */
+    public function testAddColumnAVG()
+    {
+        $s = new Select();
+
+        $s->addColumnAverage("price");
+
+        $s->addColumnAverage("amount", "medium", false);
+
+        $reflection = new \ReflectionClass($s);
+
+        $statements = $reflection->getProperty("statements");
+        $statements->setAccessible(true);
+
+        self::assertCount(2, $statements->getValue($s));
+        self::assertEquals("AVG(`price`)", $statements->getValue($s)[0]);
+        self::assertEquals("AVG(amount) AS `medium`", $statements->getValue($s)[1]);
+    }
+
     /**
      * @test
      * @throws \Saraf\QB\QueryBuilder\Exceptions\QueryBuilderException
