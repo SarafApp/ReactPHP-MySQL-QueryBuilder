@@ -206,10 +206,11 @@ class Select
         }
 
         if (count($this->statements) == 0) {
-            throw new QueryBuilderException("Statements is Required");
+            $this->addAllColumns();
         }
 
         $baseQuery = Builder::select($this->statements, $this->isDistinct);
+
         $baseQuery .= Builder::from($this->fromTable);
         $baseQuery .= Builder::joins($this->joins);
         $baseQuery .= Builder::where($this->whereStatements);
