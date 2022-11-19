@@ -1,0 +1,5 @@
+site_name: ReactPHP MySQL QueryBuilder
+nav:
+  - Home: index.md
+  - Select: select.md
+theme: readthedocs
