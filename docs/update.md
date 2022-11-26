@@ -7,7 +7,7 @@ The **Update** class contain two method such as :
 - `setUpdates`
 - `compile`
 
-Also, There are some other `Capabilities` to use with the `multiInsertUpdate` class:
+Also, There are some other `Capabilities` to use with the `Update` class:
 
 1. [Table]()
 2. [Where]()
