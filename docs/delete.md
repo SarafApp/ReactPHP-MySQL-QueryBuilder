@@ -12,6 +12,6 @@ Also, There are some other `Capabilities` to use with the `Select` class:
 
 ### compile
 
-If `fromTable` isn't filled with value, it throws `QueryBuilderException("From is Required")`.
+If `fromTable` didn't fill with value, it throws `QueryBuilderException("From is Required")`.
 
 If `factory` is null it returns `Query` instance, otherwise it returns `EQuery` instance.
