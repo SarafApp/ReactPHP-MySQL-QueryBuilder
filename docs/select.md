@@ -179,7 +179,7 @@ When you call this method, it enables `distinct` ability in your Query.
 
 ### compile
 
-If `fromTable` isn't filled with value, it throws `QueryBuilderException("From is Required")`.
+If `fromTable` didn't fill with value, it throws `QueryBuilderException("From is Required")`.
 
 If `factory` is null it returns `Query` instance, otherwise it returns `EQuery` instance.
 
