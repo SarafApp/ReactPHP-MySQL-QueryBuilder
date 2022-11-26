@@ -2,4 +2,9 @@ site_name: ReactPHP MySQL QueryBuilder
 nav:
   - Home: index.md
   - Select: select.md
+  - Insert: insert.md
+  - InsertUpdate: insertUpdate.md
+  - MultiInsertUpdate: multiInsertUpdate.md
+  - Update: update.md
+  - Delete: delete.md
 theme: readthedocs
