@@ -4,7 +4,7 @@ The `Delete` class has a method named :
 
 - `compile`
 
-Also, There are some other `Capabilities` to use with the `Select` class:
+Also, There are some other `Capabilities` to use with the `Delete` class:
 
 1. [From]()
 2. [Where]()
