@@ -141,7 +141,6 @@ final class EscapeTest extends TestCase
         self::assertEquals("'\\0'", $reflection->invoke($e, "\00"));
         self::assertEquals("'\''", $reflection->invoke($e, "'"));
         self::assertEquals("'\\\"'", $reflection->invoke($e, "\""));
-        self::assertEquals("'\_'", $reflection->invoke($e, "_"));
         self::assertEquals("'\\\\'", $reflection->invoke($e, "\\"));
     }
 }

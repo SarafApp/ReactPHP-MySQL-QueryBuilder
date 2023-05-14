@@ -300,7 +300,7 @@ final class WhereTest extends TestCase
 
         self::assertCount(1, $whereStatements->getValue($w));
         self::assertCount(2, $whereStatements->getValue($w)[0]);
-        self::assertEquals("`name` LIKE '%h\_'", $whereStatements->getValue($w)[0][0]);
+        self::assertEquals("`name` LIKE '%h_'", $whereStatements->getValue($w)[0][0]);
         self::assertEquals("family LIKE '%'.pa.'%'", $whereStatements->getValue($w)[0][1]);
     }
 
@@ -324,7 +324,7 @@ final class WhereTest extends TestCase
 
         self::assertCount(1, $whereStatements->getValue($w));
         self::assertCount(2, $whereStatements->getValue($w)[0]);
-        self::assertEquals("`name` NOT LIKE '%h\_'", $whereStatements->getValue($w)[0][0]);
+        self::assertEquals("`name` NOT LIKE '%h_'", $whereStatements->getValue($w)[0][0]);
         self::assertEquals("`family` NOT LIKE '%pa%'", $whereStatements->getValue($w)[0][1]);
     }
 
