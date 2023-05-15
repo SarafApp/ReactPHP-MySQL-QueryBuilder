@@ -15,8 +15,7 @@ final class GroupTest extends TestCase
         $g = new class () {
             use \Saraf\QB\QueryBuilder\Capability\Group;
         };
-
-        self::assertObjectHasAttribute("groupBy", $g);
+        self::assertTrue(property_exists($g, 'groupBy'));
     }
 
     /**
