@@ -15,7 +15,7 @@ final class FromTest extends TestCase
         $f = new class () {
             use \Saraf\QB\QueryBuilder\Capability\From;
         };
-        self::assertObjectHasAttribute("fromTable", $f);
+        self::assertTrue(property_exists($f, 'fromTable'));
     }
 
     /**

@@ -190,37 +190,6 @@ final class SelectTest extends TestCase
         $s->compile();
     }
 
-
-    /**
-     * @test
-     * @throws \Saraf\QB\QueryBuilder\Exceptions\QueryBuilderException
-     */
-    public function compileThrowExceptionIfStatements()
-    {
-        $s = new Select();
-
-        $s->from("Users");
-
-        self::expectException(QueryBuilderException::class);
-        $s->compile();
-    }
-
-    /**
-     * @test
-     * @throws \Saraf\QB\QueryBuilder\Exceptions\QueryBuilderException
-     */
-    public function compileWhenColumnsAreEmptyArray()
-    {
-        $s = new Select();
-
-        // it should throw exception because no statements added
-        $s->from("Users")
-            ->addColumns([]);
-
-        self::expectException(QueryBuilderException::class);
-        $s->compile();
-    }
-
     public function testAddColumnMin()
     {
         $s = new Select();

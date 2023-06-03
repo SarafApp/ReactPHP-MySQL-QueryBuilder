@@ -65,6 +65,6 @@ class TableTest extends TestCase
             use Table;
         };
 
-        self::assertObjectHasAttribute("updateTable", $t);
+        self::assertTrue(property_exists($t, 'updateTable'));
     }
 }
