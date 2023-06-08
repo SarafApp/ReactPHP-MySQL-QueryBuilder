@@ -52,7 +52,7 @@ class DBFactory
                         sprintf(
                             "%s:%s@%s:%s/%s?idle=%s&timeout=%s",
                             $this->username,
-                            $this->password,
+                            urlencode($this->password),
                             $this->host,
                             $this->writePort,
                             $this->dbName,
@@ -70,7 +70,7 @@ class DBFactory
                         sprintf(
                             "%s:%s@%s:%s/%s?idle=%s&timeout=%s",
                             $this->username,
-                            $this->password,
+                            urlencode($this->password),
                             $this->host,
                             $this->readPort,
                             $this->dbName,
