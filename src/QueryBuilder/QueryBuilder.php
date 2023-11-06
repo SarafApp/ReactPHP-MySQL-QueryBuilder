@@ -3,6 +3,8 @@
 namespace Saraf\QB\QueryBuilder;
 
 use Saraf\QB\QueryBuilder\Clauses\Delete;
+use Saraf\QB\QueryBuilder\Clauses\Events\EventCreate;
+use Saraf\QB\QueryBuilder\Clauses\Events\EventDrop;
 use Saraf\QB\QueryBuilder\Clauses\Insert;
 use Saraf\QB\QueryBuilder\Clauses\InsertUpdate;
 use Saraf\QB\QueryBuilder\Clauses\MultiInsertUpdate;
@@ -14,6 +16,15 @@ class QueryBuilder
 {
     public function __construct(protected DBFactory|null $factory = null)
     {
+    }
+
+    public function eventCreate(): EventCreate
+    {
+        return new EventCreate($this->factory);
+    }
+
+    public function eventDrop(){
+        return new EventDrop($this->factory);
     }
 
     public function select(): Select
