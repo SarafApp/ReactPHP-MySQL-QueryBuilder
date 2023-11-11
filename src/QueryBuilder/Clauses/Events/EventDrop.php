@@ -18,9 +18,10 @@ class EventDrop
     {
     }
 
-    public function setEventName(?string $eventName): void
+    public function setEventName(?string $eventName): static
     {
         $this->eventName = $eventName;
+        return $this;
     }
 
     /**
