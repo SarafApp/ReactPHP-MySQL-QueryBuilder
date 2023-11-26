@@ -48,6 +48,23 @@ trait Where
         return $this;
     }
 
+    /*
+     * Creates a custom where clause.
+     * This is not escaped and considered dangerous use it wisely
+     */
+    public function whereQuery(string $query): static
+    {
+        if (count($this->whereStatements) == 0) {
+            $state = 0;
+        } else {
+            $state = count($this->whereStatements) - 1;
+        }
+
+        $this->whereStatements[$state][] = $query;
+
+        return $this;
+    }
+
     public function whereNotIn(string $key, array $valuesArray, bool $escapeValue = true, bool $escapeKey = true): static
     {
         if ($escapeValue)
