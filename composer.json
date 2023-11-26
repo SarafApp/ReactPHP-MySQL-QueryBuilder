@@ -14,7 +14,7 @@
   ],
   "require": {
     "php": ">=8.0",
-    "react/mysql": "^0.5",
+    "react/mysql": "^0.6",
     "react/async": "^4 || ^3 || ^2"
   },
   "autoload": {

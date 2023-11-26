@@ -20,7 +20,7 @@ class DBFactory
      * @throws DBFactoryException
      */
     public function __construct(
-        protected LoopInterface $loop,
+        protected ?LoopInterface $loop,
         protected string        $host,
         protected string        $dbName,
         protected string        $username,
@@ -31,6 +31,7 @@ class DBFactory
         protected int           $readInstanceCount = 2,
         protected int           $timeout = 2,
         protected int           $idle = 2,
+        protected string        $charset = 'utf8mb4',
     )
     {
         $this->factory = new Factory($loop);
@@ -50,14 +51,15 @@ class DBFactory
                 $this->factory
                     ->createLazyConnection(
                         sprintf(
-                            "%s:%s@%s:%s/%s?idle=%s&timeout=%s",
+                            "%s:%s@%s:%s/%s?idle=%s&timeout=%s&charset=%s",
                             $this->username,
                             urlencode($this->password),
                             $this->host,
                             $this->writePort,
                             $this->dbName,
                             $this->idle,
-                            $this->timeout
+                            $this->timeout,
+                            $this->charset
                         )
                     )
             );
