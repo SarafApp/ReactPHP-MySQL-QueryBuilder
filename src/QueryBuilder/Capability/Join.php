@@ -15,39 +15,39 @@ trait Join
     /**
      * @throws QueryBuilderException
      */
-    public function leftJoin(string $table, string $fromON, string $toON, bool $escapeON = true): static
+    public function leftJoin(string $table, string $fromON, string $toON, bool $escapeON = true, string $alias = null): static
     {
-        return $this->join(JoinDirection::Left, $table, $fromON, $toON, $escapeON);
+        return $this->join(JoinDirection::Left, $table, $fromON, $toON, $escapeON, $alias);
     }
 
     /**
      * @throws QueryBuilderException
      */
-    public function rightJoin(string $table, string $fromON, string $toON, bool $escapeON = true): static
+    public function rightJoin(string $table, string $fromON, string $toON, bool $escapeON = true, string $alias = null): static
     {
-        return $this->join(JoinDirection::Right, $table, $fromON, $toON, $escapeON);
+        return $this->join(JoinDirection::Right, $table, $fromON, $toON, $escapeON, $alias);
     }
 
     /**
      * @throws QueryBuilderException
      */
-    public function innerJoin(string $table, string $fromON, string $toON, bool $escapeON = true): static
+    public function innerJoin(string $table, string $fromON, string $toON, bool $escapeON = true, string $alias = null): static
     {
-        return $this->join(JoinDirection::Inner, $table, $fromON, $toON, $escapeON);
+        return $this->join(JoinDirection::Inner, $table, $fromON, $toON, $escapeON, $alias);
     }
 
     /**
      * @throws QueryBuilderException
      */
-    public function fullJoin(string $table, string $fromON, string $toON, bool $escapeON = true): static
+    public function fullJoin(string $table, string $fromON, string $toON, bool $escapeON = true, string $alias = null): static
     {
-        return $this->join(JoinDirection::Full, $table, $fromON, $toON, $escapeON);
+        return $this->join(JoinDirection::Full, $table, $fromON, $toON, $escapeON, $alias);
     }
 
     /**
      * @throws QueryBuilderException
      */
-    protected function join(string $joinType, string $table, string $fromON, string $toON, bool $escapeON = true): static
+    protected function join(string $joinType, string $table, string $fromON, string $toON, bool $escapeON = true, string $alias = null): static
     {
         if (empty(trim($table)))
             throw new QueryBuilderException("Table is required");
@@ -58,7 +58,10 @@ trait Join
             $toON = $this->keyEscape($toON);
         }
 
-        $this->joins[] = sprintf("%s JOIN %s ON %s = %s", $joinType, $table, $fromON, $toON);
+        if ($alias != null)
+            $this->joins[] = sprintf("%s JOIN %s as %s ON %s = %s", $joinType, $table, $alias, $fromON, $toON);
+        else
+            $this->joins[] = sprintf("%s JOIN %s ON %s = %s", $joinType, $table, $fromON, $toON);
 
         return $this;
     }
