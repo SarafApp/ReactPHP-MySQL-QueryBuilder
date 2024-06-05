@@ -34,6 +34,7 @@ class DBFactory
         protected int            $timeout = 2,
         protected int            $idle = 2,
         protected string         $charset = 'utf8mb4',
+        protected bool           $debugMode = false
     )
     {
         $this->factory = new Factory($loop);
@@ -42,6 +43,12 @@ class DBFactory
 
     public function getTrace(): array
     {
+        if ($this->debugMode === false)
+            return [
+                'result' => false,
+                'error' => 'NOT_IN_DEBUG_MODE'
+            ];
+
         $jobs = [];
         foreach ($this->writeConnections as $i => $writeConnection) {
             @$jobs['write'][$i] = $writeConnection->getJobs();
@@ -52,6 +59,7 @@ class DBFactory
         }
 
         return [
+            'result' => true,
             'logs' => $this->logs,
             'workers' => $jobs
         ];
@@ -133,6 +141,9 @@ class DBFactory
 
         if (!($connection instanceof DBWorker))
             throw new DBFactoryException("Connections Not Instance of Worker / Restart App");
+
+        if (!$this->debugMode)
+            return $connection->query($query);
 
         $startTime = QBHelper::getCurrentMicroTime();
         return $connection->query($query)
