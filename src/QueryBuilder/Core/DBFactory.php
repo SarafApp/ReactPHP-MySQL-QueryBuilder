@@ -6,10 +6,12 @@ use React\EventLoop\LoopInterface;
 use React\MySQL\Factory;
 use React\Promise\PromiseInterface;
 use Saraf\QB\QueryBuilder\Exceptions\DBFactoryException;
+use Saraf\QB\QueryBuilder\Helpers\QBHelper;
 use Saraf\QB\QueryBuilder\QueryBuilder;
 
 class DBFactory
 {
+    private array $logs = [];
     private const MAX_CONNECTION_COUNT = 1000000000;
 
     protected Factory $factory;
@@ -21,21 +23,38 @@ class DBFactory
      */
     public function __construct(
         protected ?LoopInterface $loop,
-        protected string        $host,
-        protected string        $dbName,
-        protected string        $username,
-        protected string        $password,
-        protected int           $writePort = 6446,
-        protected int           $readPort = 6447,
-        protected int           $writeInstanceCount = 2,
-        protected int           $readInstanceCount = 2,
-        protected int           $timeout = 2,
-        protected int           $idle = 2,
-        protected string        $charset = 'utf8mb4',
+        protected string         $host,
+        protected string         $dbName,
+        protected string         $username,
+        protected string         $password,
+        protected int            $writePort = 6446,
+        protected int            $readPort = 6447,
+        protected int            $writeInstanceCount = 2,
+        protected int            $readInstanceCount = 2,
+        protected int            $timeout = 2,
+        protected int            $idle = 2,
+        protected string         $charset = 'utf8mb4',
     )
     {
         $this->factory = new Factory($loop);
         $this->createConnections();
+    }
+
+    public function getTrace(): array
+    {
+        $jobs = [];
+        foreach ($this->writeConnections as $i => $writeConnection) {
+            @$jobs['write'][$i] = $writeConnection->getJobs();
+        }
+
+        foreach ($this->readConnections as $s => $readConnection) {
+            @$jobs['read'][$s] = $readConnection->getJobs();
+        }
+
+        return [
+            'logs' => $this->logs,
+            'workers' => $jobs
+        ];
     }
 
     /**
@@ -115,7 +134,19 @@ class DBFactory
         if (!($connection instanceof DBWorker))
             throw new DBFactoryException("Connections Not Instance of Worker / Restart App");
 
-        return $connection->query($query);
+        $startTime = QBHelper::getCurrentMicroTime();
+        return $connection->query($query)
+            ->then(function ($result) use ($isWrite, $startTime, $query) {
+                $endTime = QBHelper::getCurrentMicroTime();
+                $this->logs[] = [
+                    'query' => $query,
+                    'took' => $endTime - $startTime,
+                    'isWrite' => $isWrite,
+                    'status' => $result['result']
+                ];
+
+                return $result;
+            });
     }
 
     /**

@@ -23,7 +23,8 @@ class QueryBuilder
         return new EventCreate($this->factory);
     }
 
-    public function eventDrop(){
+    public function eventDrop(): EventDrop
+    {
         return new EventDrop($this->factory);
     }
 
