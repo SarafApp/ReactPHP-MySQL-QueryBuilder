@@ -2,16 +2,16 @@
 
 namespace Saraf\QB\QueryBuilder\Core;
 
-use React\MySQL\ConnectionInterface;
-use React\MySQL\QueryResult;
+use React\Mysql\MysqlClient;
+use React\Mysql\MysqlResult;
 use React\Promise\PromiseInterface;
 
 class DBWorker
 {
-    protected ConnectionInterface $connection;
+    protected MysqlClient $connection;
     protected int $jobs;
 
-    public function __construct(ConnectionInterface $connection)
+    public function __construct(MysqlClient $connection)
     {
         $this->connection = $connection;
         $this->jobs = 0;
@@ -31,7 +31,7 @@ class DBWorker
             });
     }
 
-    protected function handleResult(QueryResult $result): array
+    protected function handleResult(MysqlResult $result): array
     {
         if (!is_null($result->resultRows)) {
             return [
@@ -61,17 +61,17 @@ class DBWorker
         ];
     }
 
-    protected function startJob()
+    protected function startJob(): void
     {
         ++$this->jobs;
     }
 
-    protected function endJob()
+    protected function endJob(): void
     {
         --$this->jobs;
     }
 
-    protected function getConnection(): ConnectionInterface
+    protected function getConnection(): MysqlClient
     {
         return $this->connection;
     }

@@ -14,8 +14,8 @@
   ],
   "require": {
     "php": ">=8.0",
-    "react/mysql": "^0.6",
-    "react/async": "^4 || ^3 || ^2"
+    "react/mysql": "^0.7.x-dev",
+    "react/async": "^4"
   },
   "autoload": {
     "psr-4": {

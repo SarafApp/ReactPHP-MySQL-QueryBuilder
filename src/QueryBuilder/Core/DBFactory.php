@@ -3,7 +3,7 @@
 namespace Saraf\QB\QueryBuilder\Core;
 
 use React\EventLoop\LoopInterface;
-use React\MySQL\Factory;
+use React\Mysql\MysqlClient;
 use React\Promise\PromiseInterface;
 use Saraf\QB\QueryBuilder\Exceptions\DBFactoryException;
 use Saraf\QB\QueryBuilder\Helpers\QBHelper;
@@ -14,7 +14,6 @@ class DBFactory
     private array $logs = [];
     private const MAX_CONNECTION_COUNT = 1000000000;
 
-    protected Factory $factory;
     protected array $writeConnections = [];
     protected array $readConnections = [];
 
@@ -37,7 +36,6 @@ class DBFactory
         protected bool           $debugMode = false
     )
     {
-        $this->factory = new Factory($loop);
         $this->createConnections();
     }
 
@@ -75,38 +73,40 @@ class DBFactory
 
         for ($i = 0; $i < $this->writeInstanceCount; ++$i) {
             $this->writeConnections[] = new DBWorker(
-                $this->factory
-                    ->createLazyConnection(
-                        sprintf(
-                            "%s:%s@%s:%s/%s?idle=%s&timeout=%s&charset=%s",
-                            $this->username,
-                            urlencode($this->password),
-                            $this->host,
-                            $this->writePort,
-                            $this->dbName,
-                            $this->idle,
-                            $this->timeout,
-                            $this->charset
-                        )
-                    )
+                new MysqlClient(
+                    sprintf(
+                        "%s:%s@%s:%s/%s?idle=%s&timeout=%s&charset=%s",
+                        $this->username,
+                        urlencode($this->password),
+                        $this->host,
+                        $this->writePort,
+                        $this->dbName,
+                        $this->idle,
+                        $this->timeout,
+                        $this->charset
+                    ),
+                    null,
+                    $this->loop
+                ),
             );
         }
 
         for ($s = 0; $s < $this->readInstanceCount; ++$s) {
             $this->readConnections[] = new DBWorker(
-                $this->factory
-                    ->createLazyConnection(
-                        sprintf(
-                            "%s:%s@%s:%s/%s?idle=%s&timeout=%s",
-                            $this->username,
-                            urlencode($this->password),
-                            $this->host,
-                            $this->readPort,
-                            $this->dbName,
-                            $this->idle,
-                            $this->timeout
-                        )
-                    )
+                new MysqlClient(
+                    sprintf(
+                        "%s:%s@%s:%s/%s?idle=%s&timeout=%s",
+                        $this->username,
+                        urlencode($this->password),
+                        $this->host,
+                        $this->readPort,
+                        $this->dbName,
+                        $this->idle,
+                        $this->timeout
+                    ),
+                    null,
+                    $this->loop
+                )
             );
         }
         return $this;
