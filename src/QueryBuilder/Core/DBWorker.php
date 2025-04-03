@@ -5,6 +5,7 @@ namespace Saraf\QB\QueryBuilder\Core;
 use React\MySQL\ConnectionInterface;
 use React\MySQL\QueryResult;
 use React\Promise\PromiseInterface;
+use React\Stream\ReadableStreamInterface;
 
 class DBWorker
 {
@@ -29,6 +30,14 @@ class DBWorker
                 $this->endJob();
                 return $this->handleException($exception);
             });
+    }
+
+    public function streamQuery(string $query): StreamEventHandler
+    {
+        $this->startJob();
+        return (new StreamEventHandler($this->getConnection(), $query, function () {
+            $this->endJob();
+        }));
     }
 
     protected function handleResult(QueryResult $result): array
