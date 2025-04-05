@@ -40,6 +40,11 @@ class DBWorker
         }));
     }
 
+    public function streamQueryRaw(string $query): ReadableStreamInterface
+    {
+        return $this->connection->queryStream($query);
+    }
+
     protected function handleResult(QueryResult $result): array
     {
         if (!is_null($result->resultRows)) {
