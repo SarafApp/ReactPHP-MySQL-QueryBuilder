@@ -184,6 +184,28 @@ class DBFactory
     }
 
     /**
+     * @throws \Saraf\QB\QueryBuilder\Exceptions\DBFactoryException
+     */
+    public function streamQueryRaw(string $query): ReadableStreamInterface
+    {
+        $isWrite = true;
+        if (str_starts_with(strtolower($query), "select")
+            || str_starts_with(strtolower($query), "show")
+        ) $isWrite = false;
+
+        $bestConnections = $this->getBestConnection();
+
+        $connection = $isWrite
+            ? $this->writeConnections[$bestConnections['write']]
+            : $this->readConnections[$bestConnections['read']];
+
+        if (!($connection instanceof DBWorker))
+            throw new DBFactoryException("Connections Not Instance of Worker / Restart App");
+
+        return $connection->streamQueryRaw($query);
+    }
+
+    /**
      * @throws DBFactoryException
      */
     private function getBestConnection(): array

@@ -36,6 +36,11 @@ final class EQuery
         return $this->factory->streamQuery($this->query);
     }
 
+    public function streamRaw(): ReadableStreamInterface
+    {
+        return $this->factory->streamQueryRaw($this->query);
+    }
+
     public function getQuery(): Promise
     {
         return new Promise(function (callable $resolve) {
