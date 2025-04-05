@@ -51,14 +51,8 @@ $dbFactory->getQueryBuilder()
     ->whereGreater("id", 1)
     ->compile()
     ->stream()
-    ->onError(function (Exception $result) {
-        echo "Error " . $result->getMessage() . PHP_EOL;
-    })
     ->onData(function ($result) {
         echo "New Row Data:" . json_encode($result) . PHP_EOL;
-    })
-    ->onClosed(function () {
-        echo "Task Finished";
     })
     ->run();
 

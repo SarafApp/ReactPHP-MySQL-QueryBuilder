@@ -3,12 +3,13 @@
 namespace Saraf\QB\QueryBuilder\Core;
 
 use React\MySQL\ConnectionInterface;
+use React\Promise\Deferred;
+use React\Promise\PromiseInterface;
 
 class StreamEventHandler
 {
-    protected $onError = null;
-    protected $onData = null;
-    protected $onClosed = null;
+    protected \Closure|null $onDataFn = null;
+    protected Deferred $promise;
 
     public function __construct(
         protected ConnectionInterface $connection,
@@ -18,38 +19,48 @@ class StreamEventHandler
     {
     }
 
-    public function onError(callable $onError): StreamEventHandler
+    public function onData(\Closure $onDataFn): StreamEventHandler
     {
-        $this->onError = $onError;
+        $this->onDataFn = $onDataFn;
         return $this;
     }
 
-    public function onData(callable $onData): StreamEventHandler
+    /**
+     * @throws \Exception
+     */
+    public function run(mixed $initialValue = null): PromiseInterface
     {
-        $this->onData = $onData;
-        return $this;
-    }
+        $promise = new Deferred();
 
-    public function onClosed(callable $onClosed): StreamEventHandler
-    {
-        $this->onClosed = $onClosed;
-        return $this;
-    }
+        if ($this->onDataFn == null) {
+            throw new \Exception("onData is required");
+        }
 
-    public function run(): void
-    {
+
         $stream = $this->connection->queryStream($this->query);
 
-        if ($this->onError != null)
-            $stream->on("error", $this->onError);
-        if ($this->onData != null)
-            $stream->on("data", $this->onData);
-        if ($this->onClosed != null)
-            $stream->on("close", $this->onClosed);
+        $stream->on("data", function ($row) use (&$initialValue) {
+            $initialValue = ($this->onDataFn)($row, $initialValue);
+        });
+
+        $stream->on("error", function (\Throwable $error) use ($promise) {
+            $promise->resolve([
+                'result' => false,
+                'error' => $error->getMessage(),
+            ]);
+        });
+        $stream->on("close", function () use (&$initialValue, $promise) {
+            $promise->resolve([
+                'result' => true,
+                'data' => $initialValue
+            ]);
+        });
 
         // For Handling Inner Queue
         if ($this->onClosedWorker != null)
             $stream->on("close", $this->onClosedWorker);
+
+        return $promise->promise();
     }
 
 }
