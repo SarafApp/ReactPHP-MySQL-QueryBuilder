@@ -58,14 +58,8 @@ $dbFactory->getQueryBuilder()
 
 // Without QueryBuilder
 $dbFactory->streamQuery("select id from Users where id > 1")
-    ->onError(function (Exception $result) {
-        echo "Error " . $result->getMessage() . PHP_EOL;
-    })
     ->onData(function ($result) {
         echo "New Row Data:" . json_encode($result) . PHP_EOL;
-    })
-    ->onClosed(function () {
-        echo "Task Finished";
     })
     ->run();
 
