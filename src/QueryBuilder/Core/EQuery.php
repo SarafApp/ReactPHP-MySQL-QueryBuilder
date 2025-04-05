@@ -4,6 +4,7 @@ namespace Saraf\QB\QueryBuilder\Core;
 
 use React\Promise\Promise;
 use React\Promise\PromiseInterface;
+use React\Stream\ReadableStreamInterface;
 use Saraf\QB\QueryBuilder\Exceptions\DBFactoryException;
 
 final class EQuery
@@ -28,6 +29,11 @@ final class EQuery
                 ]);
             });
         }
+    }
+
+    public function stream(): StreamEventHandler
+    {
+        return $this->factory->streamQuery($this->query);
     }
 
     public function getQuery(): Promise

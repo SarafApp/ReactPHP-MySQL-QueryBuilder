@@ -5,6 +5,7 @@ namespace Saraf\QB\QueryBuilder\Core;
 use React\EventLoop\LoopInterface;
 use React\MySQL\Factory;
 use React\Promise\PromiseInterface;
+use React\Stream\ReadableStreamInterface;
 use Saraf\QB\QueryBuilder\Exceptions\DBFactoryException;
 use Saraf\QB\QueryBuilder\Helpers\QBHelper;
 use Saraf\QB\QueryBuilder\QueryBuilder;
@@ -158,6 +159,28 @@ class DBFactory
 
                 return $result;
             });
+    }
+
+    /**
+     * @throws DBFactoryException
+     */
+    public function streamQuery(string $query): StreamEventHandler
+    {
+        $isWrite = true;
+        if (str_starts_with(strtolower($query), "select")
+            || str_starts_with(strtolower($query), "show")
+        ) $isWrite = false;
+
+        $bestConnections = $this->getBestConnection();
+
+        $connection = $isWrite
+            ? $this->writeConnections[$bestConnections['write']]
+            : $this->readConnections[$bestConnections['read']];
+
+        if (!($connection instanceof DBWorker))
+            throw new DBFactoryException("Connections Not Instance of Worker / Restart App");
+
+        return $connection->streamQuery($query);
     }
 
     /**
