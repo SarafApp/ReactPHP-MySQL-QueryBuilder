@@ -352,7 +352,7 @@ final class WhereTest extends TestCase
         self::assertCount(1, $whereStatements->getValue($w));
         self::assertCount(2, $whereStatements->getValue($w)[0]);
         self::assertEquals("`name` = 'John'", $whereStatements->getValue($w)[0][0]);
-        self::assertEquals("`family` = 'Doe\''", $whereStatements->getValue($w)[0][1]);
+        self::assertEquals("`family` = 'Doe'''", $whereStatements->getValue($w)[0][1]);
     }
 
     /**
