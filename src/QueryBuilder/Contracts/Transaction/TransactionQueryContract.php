@@ -4,5 +4,5 @@ namespace Saraf\QB\QueryBuilder\Contracts\Transaction;
 
 interface TransactionQueryContract
 {
-    public function rollback();
+    public function rollback(?string $message = null);
 }

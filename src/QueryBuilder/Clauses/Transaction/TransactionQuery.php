@@ -10,8 +10,8 @@ class TransactionQuery implements TransactionQueryContract
     /**
      * @throws TransactionException
      */
-    public function rollback()
+    public function rollback(?string $message = null)
     {
-        throw new TransactionException("Transaction Rolled Back");
+        throw new TransactionException("Transaction Rolled Back" . !empty($message) && " With message : {$message}");
     }
 }
