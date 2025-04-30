@@ -4,6 +4,7 @@ namespace Saraf\QB\QueryBuilder\Clauses\Transaction;
 
 use React\Promise\PromiseInterface;
 use Saraf\QB\QueryBuilder\Exceptions\DBFactoryException;
+use Saraf\QB\QueryBuilder\Exceptions\TransactionException;
 
 class Transaction extends TransactionBuilder
 {
@@ -21,7 +22,7 @@ class Transaction extends TransactionBuilder
 
                 if (!$bodyPromise instanceof PromiseInterface) {
 
-                    throw new DBFactoryException("Transaction body should return promise");
+                    throw new TransactionException("Transaction body should return promise");
                 }
 
                 return $bodyPromise;
@@ -30,7 +31,7 @@ class Transaction extends TransactionBuilder
 
                 $this->commit();
 
-            })->catch(function (\Throwable $e) {
+            })->catch(function (\Throwable|\Exception $e) {
 
                 $this->rollback();
                 exit(0);
