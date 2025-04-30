@@ -17,7 +17,7 @@ class Transaction extends TransactionBuilder
         return $this->startTransaction()
             ->then(function () use ($body) {
 
-                $bodyPromise = $body(new TransactionQuery($this));
+                $bodyPromise = $body(new TransactionQuery());
 
                 if (!$bodyPromise instanceof PromiseInterface) {
 
