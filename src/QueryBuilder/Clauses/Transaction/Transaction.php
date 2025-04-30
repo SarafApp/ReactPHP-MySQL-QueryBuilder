@@ -12,7 +12,7 @@ class Transaction extends TransactionBuilder
      * @throws DBFactoryException
      */
     public function __invoke(
-        callable $body
+        \Closure $body
     ): \React\Promise\PromiseInterface
     {
         return $this->startTransaction()
@@ -31,7 +31,7 @@ class Transaction extends TransactionBuilder
 
                 $this->commit();
 
-            })->catch(function (\Throwable|\Exception $e) {
+            })->catch(function (\Throwable $e) {
 
                 $this->rollback();
                 exit(0);

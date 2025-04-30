@@ -63,7 +63,7 @@ class QueryBuilder
     /**
      * @throws DBFactoryException
      */
-    public function transaction(callable $body): \React\Promise\PromiseInterface
+    public function transaction(\Closure $body): \React\Promise\PromiseInterface
     {
         return (new Transaction($this->factory))($body);
     }
