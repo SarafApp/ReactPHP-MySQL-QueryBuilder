@@ -12,7 +12,6 @@ use Saraf\QB\QueryBuilder\Clauses\Select;
 use Saraf\QB\QueryBuilder\Clauses\Transaction\Transaction;
 use Saraf\QB\QueryBuilder\Clauses\Update;
 use Saraf\QB\QueryBuilder\Core\DBFactory;
-use Saraf\QB\QueryBuilder\Exceptions\DBFactoryException;
 
 class QueryBuilder
 {
@@ -60,11 +59,8 @@ class QueryBuilder
         return new Delete($this->factory);
     }
 
-    /**
-     * @throws DBFactoryException
-     */
-    public function transaction(\Closure $body): \React\Promise\PromiseInterface
+    public function beginTransaction(): Transaction
     {
-        return (new Transaction($this->factory))($body);
+        return new Transaction($this->factory);
     }
 }
