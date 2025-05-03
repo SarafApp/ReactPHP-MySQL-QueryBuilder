@@ -4,6 +4,7 @@ namespace Saraf\QB\QueryBuilder\Clauses;
 
 use Saraf\QB\QueryBuilder\Core\DBFactory;
 use Saraf\QB\QueryBuilder\Core\DBWorker;
+use Saraf\QB\QueryBuilder\Exceptions\TransactionException;
 use Saraf\QB\QueryBuilder\Helpers\QueryResult\QueryResult;
 use Saraf\QB\QueryBuilder\Helpers\QueryResult\QueryResultCollection;
 
@@ -27,8 +28,15 @@ class Transaction
         return $this;
     }
 
+    /**
+     * @throws TransactionException
+     */
     public function compile(): void
     {
+        if (count($this->queries) === 0) {
+            throw new TransactionException('There are no queries inside transaction.');
+        }
+
         $this->connection->query("START TRANSACTION")
             ->then(function () {
                 $this->resolveQueries();
