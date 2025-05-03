@@ -1,11 +1,7 @@
 <?php
 
-namespace Saraf\QB\QueryBuilder\Clauses\Transaction;
+namespace Saraf\QB\QueryBuilder\Clauses;
 
-use Saraf\QB\QueryBuilder\Clauses\Delete;
-use Saraf\QB\QueryBuilder\Clauses\Insert;
-use Saraf\QB\QueryBuilder\Clauses\Select;
-use Saraf\QB\QueryBuilder\Clauses\Update;
 use Saraf\QB\QueryBuilder\Core\DBFactory;
 use Saraf\QB\QueryBuilder\Core\DBWorker;
 use Saraf\QB\QueryBuilder\Helpers\QueryResult\QueryResult;
