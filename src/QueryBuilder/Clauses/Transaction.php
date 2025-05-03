@@ -14,11 +14,11 @@ class Transaction
     private ?DBWorker $connection = null;
 
     public function __construct(
-        protected DBFactory $dbFactory,
+        protected ?DBFactory $dbFactory = null,
     )
     {
         $this->queryResultCollection = new QueryResultCollection();
-        $this->connection = $this->dbFactory->reserveConnection();
+        $this->connection = !is_null($this->dbFactory) ? $this->dbFactory->reserveConnection() : null;
     }
 
     public function addQuery(string $name, Select|Update|Delete|Insert $query, \Closure $callback): static
