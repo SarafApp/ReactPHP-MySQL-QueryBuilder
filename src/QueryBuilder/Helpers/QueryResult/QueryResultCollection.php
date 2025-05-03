@@ -22,7 +22,6 @@ class QueryResultCollection implements IteratorAggregate, QueryResultCollectionC
     public function get(string $name): QueryResult
     {
         if (!isset($this->queryResults[$name])) {
-
             throw new QueryResultException("Query result for '{$name}' does not exist.");
         }
         return $this->queryResults[$name];
