@@ -12,6 +12,8 @@ use Saraf\QB\QueryBuilder\QueryBuilder;
 
 class DBFactory
 {
+    use ReservableConnection;
+
     private array $logs = [];
     private const MAX_CONNECTION_COUNT = 1000000000;
 
