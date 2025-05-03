@@ -4,6 +4,7 @@ namespace Saraf\QB\QueryBuilder\Helpers\QueryResult;
 
 use IteratorAggregate;
 use Saraf\QB\QueryBuilder\Contracts\QueryResultCollectionContract;
+use Saraf\QB\QueryBuilder\Exceptions\QueryResultException;
 
 class QueryResultCollection implements IteratorAggregate, QueryResultCollectionContract
 {
@@ -15,8 +16,15 @@ class QueryResultCollection implements IteratorAggregate, QueryResultCollectionC
         return $this;
     }
 
+    /**
+     * @throws QueryResultException
+     */
     public function get(string $name): QueryResult
     {
+        if (!isset($this->queryResults[$name])) {
+
+            throw new QueryResultException("Query result for '{$name}' does not exist.");
+        }
         return $this->queryResults[$name];
     }
 
