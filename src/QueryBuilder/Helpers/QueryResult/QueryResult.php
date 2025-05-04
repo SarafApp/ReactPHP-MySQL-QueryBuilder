@@ -13,4 +13,15 @@ class QueryResult
     )
     {
     }
+
+    public function toArray(): array
+    {
+        return [
+            'result' => $this->result,
+            'count' => $this->count,
+            'rows' => $this->rows,
+            'affectedRows' => $this->affectedRows,
+            'insertId' => $this->insertId
+        ];
+    }
 }
