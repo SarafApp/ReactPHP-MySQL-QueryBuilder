@@ -2,9 +2,10 @@
 
 use Dotenv\Dotenv;
 use React\EventLoop\Loop;
-use Saraf\QB\QueryBuilder\Contracts\Transaction\TransactionQueryContract;
+use Saraf\QB\QueryBuilder\Contracts\QueryResultCollectionContract;
 use Saraf\QB\QueryBuilder\Core\DBFactory;
 use Saraf\QB\QueryBuilder\Exceptions\DBFactoryException;
+use Saraf\QB\QueryBuilder\Helpers\QueryResult\QueryResult;
 
 include "vendor/autoload.php";
 
@@ -43,80 +44,62 @@ try {
     exit(1);
 }
 
-$dbFactory->getQueryBuilder()
-    ->transaction(function (TransactionQueryContract $query) use ($dbFactory) {
+$tr = $dbFactory->getQueryBuilder()->beginTransaction();
+$tr->addQuery(
+    'selectUser',
+    $dbFactory->getQueryBuilder()
+        ->select()
+        ->from("Users")
+        ->where('id', 1),
+    function (QueryResult $result) {
+        if ($result->count == 0) {
+            return false;
+        }
+        return true;
+    }
+);
+$tr->addQuery('selectBalance',
+    $dbFactory->getQueryBuilder()
+        ->select()
+        ->from('Balances')
+        ->where('userId', 1)
+        ->where('symbol', 'IRT')
+);
 
-        return \React\Promise\all([
-            $dbFactory->getQueryBuilder()
-                ->insert()
-                ->into("users")
-                ->setColumns(["name", "email"])
-                ->addRow(['Albert', 'albert@gmail.com'])
-                ->compile()
-                ->commit()
-                ->then(function ($res) use ($query) {
+$tr->addQuery('insertTransactions',
+    $dbFactory->getQueryBuilder()
+        ->insert()
+        ->into('Transactions')
+        ->setColumns([
+            'userId',
+            'type',
+            'amount'
+        ])
+        ->addRow([
+            1,
+            'WITHDRAW',
+            100_000
+        ]),
+    function (QueryResult $result, QueryResultCollectionContract $contract) {
+        if ($contract->get('selectBalance')->rows[0]['balance'] < 100_000) {
+            return false;
+        }
 
-                    if ($res['result'] !== true) {
+        return true;
+    }
+);
 
-                        $query->rollback($res['error']);
-                    }
-                }),
+$tr->addQuery('updateBalance',
+    $dbFactory->getQueryBuilder()
+        ->update()
+        ->table('Balances')
+        ->setUpdate('balance', 'balance - ' . 100_000, false)
+        ->where('userId', 1)
+        ->where('symbol', 'IRT')
+);
 
-            $dbFactory->getQueryBuilder()
-                ->insert()
-                ->into("users")
-                ->setColumns(["name", "email"])
-                ->addRow(['Mana', 'mana@gmail.com'])
-                ->compile()
-                ->commit()
-                ->then(function ($res) use ($query) {
-
-                    if ($res['result'] !== true) {
-
-                        $query->rollback($res['error']);
-                    }
-                })
-        ]);
-    });
-
-
-$dbFactory->getQueryBuilder()
-    ->transaction(function (TransactionQueryContract $query) use ($dbFactory) {
-
-        return new \React\Promise\Promise(function ($resolve, $reject) use ($dbFactory, $query) {
-            $resolve($dbFactory->getQueryBuilder()
-                ->insert()
-                ->into("users")
-                ->setColumns(["name", "email"])
-                ->addRow(['Yank', 'yank@gmail.com'])
-                ->compile()
-                ->commit()
-                ->then(function ($res) use ($query) {
-
-                    if ($res['result'] !== true) {
-
-                        $query->rollback($res['error']);
-                    }
-                }));
-        });
-    });
-
-
-$dbFactory->getQueryBuilder()
-    ->transaction(function (TransactionQueryContract $query) use ($dbFactory) {
-
-        return $dbFactory->getQueryBuilder()
-            ->insert()
-            ->into("users")
-            ->setColumns(["name", "email"])
-            ->addRow(['Ban', 'ban@gmail.com'])
-            ->compile()
-            ->commit()
-            ->then(function ($res) use ($query) {
-
-                if ($res['result'] !== true) {
-
-                    $query->rollback($res['error']);
-                }
-            });
-    });
+$tr->compile()->then(function ($result) {
+    var_dump($result);
+})->catch(function (\Throwable $throwable) {
+    var_dump($throwable->getMessage());
+});
