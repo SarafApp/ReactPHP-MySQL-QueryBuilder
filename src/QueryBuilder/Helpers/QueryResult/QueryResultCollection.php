@@ -27,6 +27,16 @@ class QueryResultCollection implements IteratorAggregate, QueryResultCollectionC
         return $this->queryResults[$name];
     }
 
+    public function all(): array
+    {
+        return $this->queryResults;
+    }
+
+    public function last(): QueryResult
+    {
+        return end($this->queryResults);
+    }
+
     public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->queryResults);
