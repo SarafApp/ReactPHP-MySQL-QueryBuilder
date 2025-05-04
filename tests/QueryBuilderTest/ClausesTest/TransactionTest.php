@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Saraf\QB\QueryBuilder\Clauses\Select;
 use Saraf\QB\QueryBuilder\Clauses\Transaction;
 use Saraf\QB\QueryBuilder\Core\Query;
+use Saraf\QB\QueryBuilder\Exceptions\QueryBuilderException;
 use Saraf\QB\QueryBuilder\Exceptions\TransactionException;
 use Saraf\QB\QueryBuilder\Helpers\QueryResult\QueryResult;
 use Saraf\QB\QueryBuilder\Helpers\QueryResult\QueryResultCollection;
@@ -112,5 +113,69 @@ final class TransactionTest extends TestCase
             "SELECT * FROM `users` ",
             $targetQuery->compile()->getQuery()
         );
+    }
+
+    /**
+     * @test
+     */
+    public function resolveQueriesMethodShouldThrowExceptionForNullConnection()
+    {
+        $transaction = new Transaction();
+
+        $reflection = new \ReflectionClass($transaction);
+
+        $resolveQueries = $reflection->getMethod("resolveQueries");
+        $resolveQueries->setAccessible(true);
+
+        self::expectException(\Error::class);
+        $resolveQueries->invokeArgs($transaction, [null]);
+    }
+
+    /**
+     * @test
+     */
+    public function compileMethodInResolveQueriesShouldThrowQueryBuilderException()
+    {
+        $transaction = new Transaction();
+
+        $addedQuery = $transaction->addQuery(
+            'test',
+            new Select(),
+            function (QueryResult $result, QueryResultCollection $collection) {
+            }
+        );
+
+        $reflection = new \ReflectionClass($transaction);
+
+        $resolveQueries = $reflection->getMethod("resolveQueries");
+        $resolveQueries->setAccessible(true);
+
+        self::expectException(QueryBuilderException::class);
+        $resolveQueries->invokeArgs($transaction, [null]);
+    }
+
+    /**
+     * @test
+     */
+    public function shouldThrowExceptionInsideQueryStringGeneratedPromise()
+    {
+        $transaction = new Transaction();
+
+        $addedQuery = $transaction->addQuery(
+            'test',
+            (new Select())
+                ->from("users")
+                ->addAllColumns(),
+            function (QueryResult $result, QueryResultCollection $collection) {
+            }
+        );
+
+        $reflection = new \ReflectionClass($transaction);
+
+        $resolveQueries = $reflection->getMethod("resolveQueries");
+        $resolveQueries->setAccessible(true);
+
+        self::expectException(\Error::class);
+        $resolveQueries->invokeArgs($transaction, [null]);
     }
 }
