@@ -8,6 +8,7 @@ use Saraf\QB\QueryBuilder\Exceptions\TransactionException;
 use Saraf\QB\QueryBuilder\Helpers\QueryResult\QueryResult;
 use Saraf\QB\QueryBuilder\Helpers\QueryResult\QueryResultCollection;
 use function React\Promise\reject;
+use function React\Promise\resolve;
 
 class Transaction
 {
@@ -23,7 +24,7 @@ class Transaction
         $this->connection = !is_null($this->dbFactory) ? $this->dbFactory->reserveConnection() : null;
     }
 
-    public function addQuery(string $name, Select|Update|Delete|Insert $query, \Closure $callback): static
+    public function addQuery(string $name, Select|Update|Delete|Insert $query, ?\Closure $callback = null): static
     {
         $this->queries[] = compact('name', 'query', 'callback');
         return $this;
@@ -50,7 +51,8 @@ class Transaction
     protected function resolveQueries(): \React\Promise\PromiseInterface
     {
         if (count($this->queries) === 0) {
-            return $this->connection->query('COMMIT');
+            $this->connection->query('COMMIT');
+            return resolve($this->queryResultCollection->last()->toArray());
         }
 
         $queryItem = array_shift($this->queries);
@@ -76,7 +78,7 @@ class Transaction
                         @$result['insertId'] ?? null,
                     );
 
-                    if ($callback($queryResult, $this->queryResultCollection)) {
+                    if (is_null($callback) || $callback($queryResult, $this->queryResultCollection)) {
                         $this->queryResultCollection->add($name, $queryResult);
                         return $this->resolveQueries();
                     }
