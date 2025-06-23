@@ -16,7 +16,6 @@ class DBFactory
     private array $logs = [];
     private const MAX_CONNECTION_COUNT = 1000000000;
 
-    protected Factory $factory;
     protected array $writeConnections = [];
     protected array $readConnections = [];
 
@@ -38,7 +37,6 @@ class DBFactory
         protected string $charset = 'utf8mb4',
         protected bool $debugMode = false,
     ) {
-        $this->factory = new Factory($loop);
         $this->createConnections();
     }
 
