@@ -9,6 +9,7 @@ use Saraf\QB\QueryBuilder\Clauses\Insert;
 use Saraf\QB\QueryBuilder\Clauses\InsertUpdate;
 use Saraf\QB\QueryBuilder\Clauses\MultiInsertUpdate;
 use Saraf\QB\QueryBuilder\Clauses\Select;
+use Saraf\QB\QueryBuilder\Clauses\Transaction;
 use Saraf\QB\QueryBuilder\Clauses\Update;
 use Saraf\QB\QueryBuilder\Core\DBFactory;
 
@@ -58,4 +59,8 @@ class QueryBuilder
         return new Delete($this->factory);
     }
 
+    public function beginTransaction(): Transaction
+    {
+        return new Transaction($this->factory);
+    }
 }
