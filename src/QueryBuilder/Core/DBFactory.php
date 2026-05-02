@@ -32,10 +32,10 @@ class DBFactory
         protected string         $password,
         protected int            $writePort = 6446,
         protected int            $readPort = 6447,
-        protected int            $writeInstanceCount = 2,
-        protected int            $readInstanceCount = 2,
-        protected int            $timeout = 2,
-        protected int            $idle = 2,
+        protected int            $writeInstanceCount = 1,
+        protected int            $readInstanceCount = 1,
+        protected int            $timeout = 30,
+        protected int            $idle = 60,
         protected string         $charset = 'utf8mb4',
         protected bool           $debugMode = false
     )
@@ -132,8 +132,8 @@ class DBFactory
     public function query(string $query): PromiseInterface
     {
         $isWrite = true;
-        if (str_starts_with(strtolower($query), "select")
-            || str_starts_with(strtolower($query), "show")
+        if (str_starts_with(strtolower(trim($query, " \n\r\t\v\0(")), "select")
+            || str_starts_with(strtolower(trim($query, " \n\r\t\v\0(")), "show")
         ) $isWrite = false;
 
         $bestConnections = $this->getBestConnection();
@@ -169,8 +169,8 @@ class DBFactory
     public function streamQuery(string $query): StreamEventHandler
     {
         $isWrite = true;
-        if (str_starts_with(strtolower($query), "select")
-            || str_starts_with(strtolower($query), "show")
+        if (str_starts_with(strtolower(trim($query, " \n\r\t\v\0(")), "select")
+            || str_starts_with(strtolower(trim($query, " \n\r\t\v\0(")), "show")
         ) $isWrite = false;
 
         $bestConnections = $this->getBestConnection();
@@ -191,8 +191,8 @@ class DBFactory
     public function streamQueryRaw(string $query): ReadableStreamInterface
     {
         $isWrite = true;
-        if (str_starts_with(strtolower($query), "select")
-            || str_starts_with(strtolower($query), "show")
+        if (str_starts_with(strtolower(trim($query, " \n\r\t\v\0(")), "select")
+            || str_starts_with(strtolower(trim($query, " \n\r\t\v\0(")), "show")
         ) $isWrite = false;
 
         $bestConnections = $this->getBestConnection();
@@ -212,7 +212,7 @@ class DBFactory
      */
     private function getBestConnection(): array
     {
-        if (count($this->readConnections) == 0 || count($this->writeConnections) == 0)
+        if (count($this->readConnections) == 0 && count($this->writeConnections) == 0)
             throw new DBFactoryException("Connections Not Created");
 
         // Best Writer
