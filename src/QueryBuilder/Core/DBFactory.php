@@ -9,6 +9,8 @@ use React\Stream\ReadableStreamInterface;
 use Saraf\QB\QueryBuilder\Exceptions\DBFactoryException;
 use Saraf\QB\QueryBuilder\Helpers\QBHelper;
 use Saraf\QB\QueryBuilder\QueryBuilder;
+use function React\Promise\all;
+use function React\Promise\resolve;
 
 class DBFactory
 {
@@ -239,6 +241,43 @@ class DBFactory
             'write' => $minJobsWriterConnection,
             'read' => $minJobsReaderConnection
         ];
+    }
+
+    public function warmUp(): PromiseInterface
+    {
+        $warmUpQuery = "SELECT @@hostname";
+        $list = [];
+        foreach ($this->writeConnections as $connection) {
+            $list[] = $connection->query($warmUpQuery);
+        }
+
+        foreach ($this->readConnections as $connection) {
+            $list[] = $connection->query($warmUpQuery);
+        }
+
+        if (count($list) == 0)
+            return resolve([
+                'result' => false,
+                'error' => "WarmUp failed",
+                'trace' => "No Active Instances to WarmUp"
+            ]);
+
+        return all($list)
+            ->then(function ($results) {
+                foreach ($results as $result) {
+                    if (!$result['result'])
+                        return [
+                            'result' => false,
+                            'error' => "WarmUp failed",
+                            'trace' => $result['error']
+                        ];
+                }
+
+                return [
+                    'result' => true,
+                    'status' => "WarmUp Success",
+                ];
+            });
     }
 
 
