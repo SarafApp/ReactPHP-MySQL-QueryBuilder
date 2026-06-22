@@ -6,16 +6,39 @@ use React\MySQL\ConnectionInterface;
 use React\MySQL\QueryResult;
 use React\Promise\PromiseInterface;
 use React\Stream\ReadableStreamInterface;
+use Saraf\QB\QueryBuilder\Exceptions\TransactionException;
 
 class DBWorker
 {
     protected ConnectionInterface $connection;
     protected int $jobs;
+    protected bool $reserved = false;
 
     public function __construct(ConnectionInterface $connection)
     {
         $this->connection = $connection;
         $this->jobs = 0;
+    }
+
+    /**
+     * @throws TransactionException
+     */
+    public function reserve(): void
+    {
+        if ($this->reserved) {
+            throw new TransactionException("Worker already reserved");
+        }
+        $this->reserved = true;
+    }
+
+    public function release(): void
+    {
+        $this->reserved = false;
+    }
+
+    public function isReserved(): bool
+    {
+        return $this->reserved;
     }
 
     public function query(string $query): PromiseInterface

@@ -11,11 +11,25 @@ use Saraf\QB\QueryBuilder\Clauses\MultiInsertUpdate;
 use Saraf\QB\QueryBuilder\Clauses\Select;
 use Saraf\QB\QueryBuilder\Clauses\Update;
 use Saraf\QB\QueryBuilder\Core\DBFactory;
+use React\Promise\PromiseInterface;
+use function React\Promise\resolve;
 
 class QueryBuilder
 {
     public function __construct(protected DBFactory|null $factory = null)
     {
+    }
+
+    public function transaction(callable $work): PromiseInterface
+    {
+        if ($this->factory === null) {
+            return resolve([
+                'result' => false,
+                'error' => 'Transactions require a DBFactory',
+                'failedAt' => 'reserve',
+            ]);
+        }
+        return $this->factory->transaction($work);
     }
 
     public function eventCreate(): EventCreate

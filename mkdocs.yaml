@@ -7,4 +7,5 @@ nav:
   - MultiInsertUpdate: multiInsertUpdate.md
   - Update: update.md
   - Delete: delete.md
+  - Transaction: transaction.md
 theme: readthedocs

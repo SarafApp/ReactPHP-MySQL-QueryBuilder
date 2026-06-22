@@ -7,6 +7,7 @@ use React\MySQL\Factory;
 use React\Promise\PromiseInterface;
 use React\Stream\ReadableStreamInterface;
 use Saraf\QB\QueryBuilder\Exceptions\DBFactoryException;
+use Saraf\QB\QueryBuilder\Exceptions\TransactionException;
 use Saraf\QB\QueryBuilder\Helpers\QBHelper;
 use Saraf\QB\QueryBuilder\QueryBuilder;
 use function React\Promise\all;
@@ -37,7 +38,8 @@ class DBFactory
         protected int            $timeout = 30,
         protected int            $idle = 60,
         protected string         $charset = 'utf8mb4',
-        protected bool           $debugMode = false
+        protected bool           $debugMode = false,
+        protected int            $maxWriteConnections = 1_000_000_000
     )
     {
         $this->factory = new Factory($loop);
@@ -77,22 +79,7 @@ class DBFactory
             throw new DBFactoryException("Connections Already Created");
 
         for ($i = 0; $i < $this->writeInstanceCount; ++$i) {
-            $this->writeConnections[] = new DBWorker(
-                $this->factory
-                    ->createLazyConnection(
-                        sprintf(
-                            "%s:%s@%s:%s/%s?idle=%s&timeout=%s&charset=%s",
-                            $this->username,
-                            urlencode($this->password),
-                            $this->host,
-                            $this->writePort,
-                            $this->dbName,
-                            $this->idle,
-                            $this->timeout,
-                            $this->charset
-                        )
-                    )
-            );
+            $this->writeConnections[] = $this->createWriteConnection();
         }
 
         for ($s = 0; $s < $this->readInstanceCount; ++$s) {
@@ -137,6 +124,9 @@ class DBFactory
         ) $isWrite = false;
 
         $bestConnections = $this->getBestConnection();
+
+        if ($isWrite && $bestConnections['write'] === null)
+            throw new DBFactoryException("All write connections reserved by transactions");
 
         $connection = $isWrite
             ? $this->writeConnections[$bestConnections['write']]
@@ -220,6 +210,7 @@ class DBFactory
         $minJobsWriterConnection = null;
 
         foreach ($this->writeConnections as $i => $writeConnection) {
+            if ($writeConnection->isReserved()) continue;
             if ($writeConnection->getJobs() < $minWriteJobs) {
                 $minWriteJobs = $writeConnection->getJobs();
                 $minJobsWriterConnection = $i;
@@ -241,6 +232,70 @@ class DBFactory
             'write' => $minJobsWriterConnection,
             'read' => $minJobsReaderConnection
         ];
+    }
+
+    protected function createWriteConnection(): DBWorker
+    {
+        return new DBWorker(
+            $this->factory
+                ->createLazyConnection(
+                    sprintf(
+                        "%s:%s@%s:%s/%s?idle=%s&timeout=%s&charset=%s",
+                        $this->username,
+                        urlencode($this->password),
+                        $this->host,
+                        $this->writePort,
+                        $this->dbName,
+                        $this->idle,
+                        $this->timeout,
+                        $this->charset
+                    )
+                )
+        );
+    }
+
+    /**
+     * @throws TransactionException
+     */
+    public function reserveWriteConnection(): DBWorker
+    {
+        $candidate = null;
+        $minJobs = self::MAX_CONNECTION_COUNT;
+        foreach ($this->writeConnections as $writeConnection) {
+            if ($writeConnection->isReserved()) continue;
+            if ($writeConnection->getJobs() < $minJobs) {
+                $minJobs = $writeConnection->getJobs();
+                $candidate = $writeConnection;
+            }
+        }
+
+        if ($candidate === null) {
+            if (count($this->writeConnections) >= $this->maxWriteConnections) {
+                throw new TransactionException(
+                    "All write connections reserved (cap=" . $this->maxWriteConnections . ")"
+                );
+            }
+            $candidate = $this->createWriteConnection();
+            $this->writeConnections[] = $candidate;
+        }
+
+        $candidate->reserve();
+        return $candidate;
+    }
+
+    public function transaction(callable $work): PromiseInterface
+    {
+        try {
+            $worker = $this->reserveWriteConnection();
+        } catch (TransactionException $e) {
+            return resolve([
+                'result' => false,
+                'error' => $e->getMessage(),
+                'failedAt' => 'reserve',
+            ]);
+        }
+
+        return (new Transaction($this, $worker))->run($work);
     }
 
     public function warmUp(): PromiseInterface

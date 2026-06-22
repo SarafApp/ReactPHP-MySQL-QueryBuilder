@@ -175,6 +175,36 @@ $dbFactory->getQueryBuilder()
     });
 ````
 
+### Transaction
+
+Group multiple writes into a `BEGIN ... COMMIT` block with automatic `ROLLBACK` on any failure. The closure receives a `Transaction` handle that exposes the same fluent API; all statements built inside it (including `SELECT`s) execute on a single reserved write connection.
+
+````
+$dbFactory->getQueryBuilder()->transaction(function ($tx) {
+    return $tx->insert()
+        ->into("Orders")
+        ->setColumns(["customerId", "total"])
+        ->addRow([42, 199])
+        ->compile()
+        ->commit()
+        ->then(function ($r) use ($tx) {
+            if (!$r['result']) throw new \RuntimeException($r['error']);
+            return $tx->update()
+                ->table("Stock")
+                ->setUpdates(['reserved' => 'reserved + 1'])
+                ->where("productId", 42)
+                ->compile()
+                ->commit()
+                ->then(fn() => ['orderId' => $r['insertId']]);
+        });
+})->then(function ($outer) {
+    // $outer['result'] === true  => committed; $outer['data'] is the closure's resolved value
+    // $outer['result'] === false => rolled back; $outer['failedAt'] tells you where
+});
+````
+
+See [Transaction](transaction.md) for the full `failedAt` enum and pool-growth details.
+
 ### MultiInsertUpdate
 
 This method behaves exactly just like `InsertUpdate`
